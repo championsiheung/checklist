@@ -25,6 +25,22 @@ function getAllCheckboxes() {
   return document.querySelectorAll('input[type=checkbox]');
 }
 
+// 오늘 날짜 표시
+document.addEventListener("DOMContentLoaded", () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  
+  const formattedDate = `${year}-${month}-${day}`;
+
+  // 오늘자 마감 체크 제목에 날짜 넣기
+  const todayHeader = document.getElementById("todayHeader");
+  if (todayHeader) {
+    todayHeader.textContent = `오늘자 마감 체크 (${formattedDate})`;
+  }
+});
+
 
 // ===============================
 // 상태 저장
