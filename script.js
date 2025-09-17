@@ -288,7 +288,7 @@ togglePair('toiletWater', 'toiletBleach', 'toiletWaterText', 'toiletBleachText')
 // ===============================
 // 완료 저장 (이미지)
 // ===============================
-document.querySelectorAll('.commonSaveBtn').forEach(button => {
+document.querySelectorAll('.saveImageBtn, .saveImageBtn2, .saveImageBtn3, .saveImageBtn4, .saveImageBtn5').forEach(button => {
   button.addEventListener('click', () => {
     const area = document.getElementById('captureArea');
     const notes = document.getElementById('specialNotes');
