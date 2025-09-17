@@ -288,23 +288,13 @@ togglePair('toiletWater', 'toiletBleach', 'toiletWaterText', 'toiletBleachText')
 // ===============================
 // 완료 저장 (이미지)
 // ===============================
-document.getElementById('saveHall2').addEventListener('click', async () => {
-  const sections = [
-    document.getElementById('adminSection'),
-    document.getElementById('kitchenSection'),
-    document.getElementById('cafeSection'),
-    document.getElementById('hallSection'),
-    document.getElementById('hallSection2')
-  ];
-
-  const notes = document.getElementById('specialNotes');
-
-  for (let i = 0; i < sections.length; i++) {
-    const area = sections[i];
-
-    // 관리자 섹션일 때 textarea 표시
+document.querySelectorAll('.saveImageBtn, .saveImageBtn2, .saveImageBtn3, .saveImageBtn4, .saveImageBtn5').forEach(button => {
+  button.addEventListener('click', () => {
+    const area = document.getElementById('captureArea');
+    const notes = document.getElementById('specialNotes');
     let tempNotesDiv = null;
-    if (notes && area.id === 'hallSection2') { // 기타 특이사항 섹션
+
+    if (notes) {
       tempNotesDiv = document.createElement('div');
       const rect = notes.getBoundingClientRect();
       const notesStyle = window.getComputedStyle(notes);
@@ -325,27 +315,52 @@ document.getElementById('saveHall2').addEventListener('click', async () => {
       notes.parentElement.appendChild(tempNotesDiv);
     }
 
-    try {
-      const canvas = await html2canvas(area, { scale: window.devicePixelRatio || 2, backgroundColor: '#fff' });
+    html2canvas(area, { scale: window.devicePixelRatio || 2, backgroundColor: '#fff', scrollY: -window.scrollY, scrollX: -window.scrollX }).then(canvas => {
       const link = document.createElement('a');
       link.href = canvas.toDataURL('image/png');
-      const name = area.id.replace('Section','');
-      link.download = `마감체크리스트_${name}_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;
+      link.download = `마감체크리스트_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;
       document.body.appendChild(link);
       link.click();
       link.remove();
-    } catch(err) {
-      console.error(`${area.id} 캡처 실패`, err);
-    }
 
-    // 캡처 후 textarea 복원
-    if (tempNotesDiv) {
-      tempNotesDiv.remove();
-      notes.style.opacity = '1';
-    }
-  }
+      if (tempNotesDiv) tempNotesDiv.remove();
+      if (notes) notes.style.opacity = '1';
+
+      // 완료 저장 후 체크박스 초기화
+      const currentSection = sections[currentIndex];
+      currentSection.querySelectorAll('input[type=checkbox]').forEach(cb => {
+        cb.checked = false;
+        cb.disabled = false;
+        updateGroupHighlight(cb);
+      });
+
+      // 이유 textarea 초기화
+      const reasonDiv = currentSection.querySelector('.reason-container');
+      if(reasonDiv) {
+        reasonDiv.style.display = 'none';
+        const textarea = reasonDiv.querySelector('textarea');
+        if(textarea) textarea.value = '';
+        const uncheckedDiv = reasonDiv.querySelector('.unchecked-items');
+        if(uncheckedDiv) uncheckedDiv.innerHTML = '';
+      }
+
+      saveState();
+
+      // 완료 저장 후 다음 섹션으로 이동
+      if (currentIndex < sections.length - 1) {
+        currentIndex++;
+        showSection(currentIndex);
+        updateNavButtons();
+      }
+
+    }).catch(err => {
+      alert('이미지 생성 중 오류가 발생했습니다.');
+      console.error(err);
+      if(tempNotesDiv) tempNotesDiv.remove();
+      if(notes) notes.style.opacity = '1';
+    });
+  });
 });
-
 
 // ===============================
 // 로드 시 상태 복원
