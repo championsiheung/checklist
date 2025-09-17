@@ -326,26 +326,27 @@ document.querySelectorAll('.saveImageBtn, .saveImageBtn2, .saveImageBtn3, .saveI
       tempNotesDiv.remove();
       notes.style.opacity = '1';
 
-      // 캡처 후 복원 후 체크박스 초기화 부분
-      const currentSection = sections[currentIndex]; // 🔹 현재 보고 있는 섹션
-      currentSection.querySelectorAll('input[type=checkbox]').forEach(cb => {
-        cb.checked = false;
-        cb.disabled = false; // 필요하면 disabled 풀기
-        updateGroupHighlight(cb);
-      });
+    // 캡처 후 복원 후 체크박스 초기화 부분
+    const currentSection = sections[currentIndex]; // 🔹 현재 보고 있는 섹션
+    currentSection.querySelectorAll('input[type=checkbox]').forEach(cb => {
+      cb.checked = false;
+      cb.disabled = false; // 필요하면 disabled 풀기
+      updateGroupHighlight(cb);
+    });
 
-      // 이유 textarea 초기화
-      const reasonDiv = currentSection.querySelector('.reason-container');
-      if(reasonDiv) {
-        reasonDiv.style.display = 'none';
-        const textarea = reasonDiv.querySelector('textarea');
-        if(textarea) textarea.value = '';
-        const uncheckedDiv = reasonDiv.querySelector('.unchecked-items');
-        if(uncheckedDiv) uncheckedDiv.innerHTML = '';
-      }
+    // 이유 textarea 초기화
+    const reasonDiv = currentSection.querySelector('.reason-container');
+    if(reasonDiv) {
+      reasonDiv.style.display = 'none';
+      const textarea = reasonDiv.querySelector('textarea');
+      if(textarea) textarea.value = '';
+      const uncheckedDiv = reasonDiv.querySelector('.unchecked-items');
+      if(uncheckedDiv) uncheckedDiv.innerHTML = '';
+    }
 
-      // 상태 저장
-      saveState();
+    // 상태 저장
+    saveState();
+
     }).catch(err => {
       alert('이미지 생성 중 오류가 발생했습니다.');
       console.error(err);
