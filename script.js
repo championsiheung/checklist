@@ -450,4 +450,50 @@ function updateNavButtons() {
 showSection(currentIndex);
 updateNavButtons();
 
+// ===============================
+// 특정 시간 1회 자동 초기화
+// ===============================
+let lastReset = null; // 마지막 초기화 날짜
 
+function autoResetAtTime(hour, minute) {
+  setInterval(() => {
+    const now = new Date();
+    const todayKey = now.toDateString(); // "Wed Sep 17 2025" 형태
+
+    // 현재 시간이 지정 시각이고, 오늘 아직 초기화하지 않았을 때만 실행
+    if (now.getHours() === hour && now.getMinutes() === minute && lastReset !== todayKey) {
+      lastReset = todayKey; // 초기화 완료 기록
+
+      // 체크박스 초기화
+      getAllCheckboxes().forEach(cb => {
+        cb.checked = false;
+        cb.disabled = false;
+      });
+
+      // 그룹 하이라이트 초기화
+      getAllCheckboxes().forEach(updateGroupHighlight);
+
+      // 사유 영역 초기화
+      document.querySelectorAll('.reason-container').forEach(reasonDiv => {
+        reasonDiv.style.display = 'none';
+        const textarea = reasonDiv.querySelector('textarea');
+        if (textarea) textarea.value = '';
+        const uncheckedDiv = reasonDiv.querySelector('.unchecked-items');
+        if (uncheckedDiv) uncheckedDiv.innerHTML = '';
+      });
+
+      // 상태 저장 초기화
+      localStorage.removeItem(STORAGE_KEY);
+
+      // 첫 섹션으로 이동
+      currentIndex = 0;
+      showSection(currentIndex);
+      updateNavButtons();
+
+      console.log(`${hour}:${minute} 자동 초기화 완료!`);
+    }
+  }, 1000); // 1초마다 체크
+}
+
+// 적용 (나중에 시간 바꾸려면 여기만 수정)
+autoResetAtTime(16, 24);
