@@ -292,28 +292,31 @@ document.querySelectorAll('.saveImageBtn, .saveImageBtn2, .saveImageBtn3, .saveI
   button.addEventListener('click', () => {
     const area = document.getElementById('captureArea');
     const notes = document.getElementById('specialNotes');
+    let tempNotesDiv = null;
 
-    // textarea 내용을 표시할 임시 div 생성
-    const tempNotesDiv = document.createElement('div');
-    const rect = notes.getBoundingClientRect();
-    const notesStyle = window.getComputedStyle(notes);
+    // textarea가 있을 때만 임시 div 생성
+    if (notes) {
+      tempNotesDiv = document.createElement('div');
+      const rect = notes.getBoundingClientRect();
+      const notesStyle = window.getComputedStyle(notes);
 
-    tempNotesDiv.style.position = 'absolute';
-    tempNotesDiv.style.top = rect.top + window.scrollY + 'px';
-    tempNotesDiv.style.left = rect.left + window.scrollX + 'px';
-    tempNotesDiv.style.width = rect.width + 'px';
-    tempNotesDiv.style.height = rect.height + 'px';
-    tempNotesDiv.style.padding = notesStyle.padding;
-    tempNotesDiv.style.border = notesStyle.border;
-    tempNotesDiv.style.background = notesStyle.backgroundColor;
-    tempNotesDiv.style.font = notesStyle.font;
-    tempNotesDiv.style.whiteSpace = 'pre-wrap';
-    tempNotesDiv.innerText = notes.value;
+      tempNotesDiv.style.position = 'absolute';
+      tempNotesDiv.style.top = rect.top + window.scrollY + 'px';
+      tempNotesDiv.style.left = rect.left + window.scrollX + 'px';
+      tempNotesDiv.style.width = rect.width + 'px';
+      tempNotesDiv.style.height = rect.height + 'px';
+      tempNotesDiv.style.padding = notesStyle.padding;
+      tempNotesDiv.style.border = notesStyle.border;
+      tempNotesDiv.style.background = notesStyle.backgroundColor;
+      tempNotesDiv.style.font = notesStyle.font;
+      tempNotesDiv.style.whiteSpace = 'pre-wrap';
+      tempNotesDiv.innerText = notes.value;
 
-    notes.style.opacity = '0';
-    notes.parentElement.appendChild(tempNotesDiv);
+      notes.style.opacity = '0';
+      notes.parentElement.appendChild(tempNotesDiv);
+    }
 
-    html2canvas(area, { scale: 2, backgroundColor: '#fff' }).then(canvas => {
+    html2canvas(area, { scale: window.devicePixelRatio || 2, backgroundColor: '#fff', scrollY: -window.scrollY, scrollX: -window.scrollX }).then(canvas => {
       const link = document.createElement('a');
       link.href = canvas.toDataURL('image/png');
       link.download = `마감체크리스트_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;
@@ -323,35 +326,34 @@ document.querySelectorAll('.saveImageBtn, .saveImageBtn2, .saveImageBtn3, .saveI
       link.remove();
 
       // 캡처 후 복원
-      tempNotesDiv.remove();
-      notes.style.opacity = '1';
+      if (tempNotesDiv) tempNotesDiv.remove();
+      if (notes) notes.style.opacity = '1';
 
-    // 캡처 후 복원 후 체크박스 초기화 부분
-    const currentSection = sections[currentIndex]; // 🔹 현재 보고 있는 섹션
-    currentSection.querySelectorAll('input[type=checkbox]').forEach(cb => {
-      cb.checked = false;
-      cb.disabled = false; // 필요하면 disabled 풀기
-      updateGroupHighlight(cb);
-    });
+      // 캡처 후 체크박스 초기화
+      const currentSection = sections[currentIndex];
+      currentSection.querySelectorAll('input[type=checkbox]').forEach(cb => {
+        cb.checked = false;
+        cb.disabled = false;
+        updateGroupHighlight(cb);
+      });
 
-    // 이유 textarea 초기화
-    const reasonDiv = currentSection.querySelector('.reason-container');
-    if(reasonDiv) {
-      reasonDiv.style.display = 'none';
-      const textarea = reasonDiv.querySelector('textarea');
-      if(textarea) textarea.value = '';
-      const uncheckedDiv = reasonDiv.querySelector('.unchecked-items');
-      if(uncheckedDiv) uncheckedDiv.innerHTML = '';
-    }
+      // 이유 textarea 초기화
+      const reasonDiv = currentSection.querySelector('.reason-container');
+      if(reasonDiv) {
+        reasonDiv.style.display = 'none';
+        const textarea = reasonDiv.querySelector('textarea');
+        if(textarea) textarea.value = '';
+        const uncheckedDiv = reasonDiv.querySelector('.unchecked-items');
+        if(uncheckedDiv) uncheckedDiv.innerHTML = '';
+      }
 
-    // 상태 저장
-    saveState();
+      saveState();
 
     }).catch(err => {
       alert('이미지 생성 중 오류가 발생했습니다.');
       console.error(err);
-      tempNotesDiv.remove();
-      notes.style.opacity = '1';
+      if(tempNotesDiv) tempNotesDiv.remove();
+      if(notes) notes.style.opacity = '1';
     });
   });
 });
