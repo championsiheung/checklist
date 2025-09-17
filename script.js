@@ -318,7 +318,6 @@ document.querySelectorAll('.saveImageBtn, .saveImageBtn2, .saveImageBtn3, .saveI
       link.href = canvas.toDataURL('image/png');
       link.download = `마감체크리스트_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;
 
-      // 모바일용: 반드시 사용자 제스처 안에서 클릭
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -326,6 +325,27 @@ document.querySelectorAll('.saveImageBtn, .saveImageBtn2, .saveImageBtn3, .saveI
       // 캡처 후 복원
       tempNotesDiv.remove();
       notes.style.opacity = '1';
+
+      // 캡처 후 복원 후 체크박스 초기화 부분
+      const currentSection = sections[currentIndex]; // 🔹 현재 보고 있는 섹션
+      currentSection.querySelectorAll('input[type=checkbox]').forEach(cb => {
+        cb.checked = false;
+        cb.disabled = false; // 필요하면 disabled 풀기
+        updateGroupHighlight(cb);
+      });
+
+      // 이유 textarea 초기화
+      const reasonDiv = currentSection.querySelector('.reason-container');
+      if(reasonDiv) {
+        reasonDiv.style.display = 'none';
+        const textarea = reasonDiv.querySelector('textarea');
+        if(textarea) textarea.value = '';
+        const uncheckedDiv = reasonDiv.querySelector('.unchecked-items');
+        if(uncheckedDiv) uncheckedDiv.innerHTML = '';
+      }
+
+      // 상태 저장
+      saveState();
     }).catch(err => {
       alert('이미지 생성 중 오류가 발생했습니다.');
       console.error(err);
@@ -334,7 +354,6 @@ document.querySelectorAll('.saveImageBtn, .saveImageBtn2, .saveImageBtn3, .saveI
     });
   });
 });
-
 
 // ===============================
 // 로드 시 상태 복원
@@ -449,52 +468,4 @@ function updateNavButtons() {
 // 초기 표시
 showSection(currentIndex);
 updateNavButtons();
-
-// ===============================
-// 특정 시간 1회 자동 초기화
-// ===============================
-let lastReset = null; // 마지막 초기화 날짜
-
-function autoResetAtTime(hour, minute) {
-  setInterval(() => {
-    const now = new Date();
-    const todayKey = now.toDateString(); // "Wed Sep 17 2025" 형태
-
-    // 현재 시간이 지정 시각이고, 오늘 아직 초기화하지 않았을 때만 실행
-    if (now.getHours() === hour && now.getMinutes() === minute && lastReset !== todayKey) {
-      lastReset = todayKey; // 초기화 완료 기록
-
-      // 체크박스 초기화
-      getAllCheckboxes().forEach(cb => {
-        cb.checked = false;
-        cb.disabled = false;
-      });
-
-      // 그룹 하이라이트 초기화
-      getAllCheckboxes().forEach(updateGroupHighlight);
-
-      // 사유 영역 초기화
-      document.querySelectorAll('.reason-container').forEach(reasonDiv => {
-        reasonDiv.style.display = 'none';
-        const textarea = reasonDiv.querySelector('textarea');
-        if (textarea) textarea.value = '';
-        const uncheckedDiv = reasonDiv.querySelector('.unchecked-items');
-        if (uncheckedDiv) uncheckedDiv.innerHTML = '';
-      });
-
-      // 상태 저장 초기화
-      localStorage.removeItem(STORAGE_KEY);
-
-      // 첫 섹션으로 이동
-      currentIndex = 0;
-      showSection(currentIndex);
-      updateNavButtons();
-
-      console.log(`${hour}:${minute} 자동 초기화 완료!`);
-    }
-  }, 1000); // 1초마다 체크
-}
-
-// 적용 (나중에 시간 바꾸려면 여기만 수정)
-autoResetAtTime(16, 26);
 
