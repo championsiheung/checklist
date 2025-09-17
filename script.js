@@ -496,4 +496,5 @@ function autoResetAtTime(hour, minute) {
 }
 
 // 적용 (나중에 시간 바꾸려면 여기만 수정)
-autoResetAtTime(16, 24);
+autoResetAtTime(16, 26);
+
